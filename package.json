@@ -1,13 +1,19 @@
 {
-  "name": "TEAL",
-  "displayName": "TEAL",
-  "description": "",
+  "name": "teal",
+  "displayName": "teal",
+  "description": "Algorand TEAL language support for Visual Studio Code",
+  "author": {
+    "name": "DragMZ"
+  },
+  "license": "MIT",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.73.0"
   },
+  "private": true,
   "categories": [
-    "Other"
+    "Programming Languages",
+    "Linters"
   ],
   "activationEvents": [
     "onLanguage:teal"
