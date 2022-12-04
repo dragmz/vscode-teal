@@ -5,10 +5,14 @@
   "author": {
     "name": "DragMZ"
   },
+  "publisher": "DragMZ",
   "license": "MIT",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.73.0"
+  },
+  "repository": {
+    "url": "https://github.com/dragmz/vscode-teal"
   },
   "private": true,
   "categories": [
@@ -16,7 +20,10 @@
     "Linters"
   ],
   "activationEvents": [
-    "onLanguage:teal"
+    "onLanguage:teal",
+    "workspaceContains:*.teal",
+    "workspaceContains:*/*.teal",
+    "workspaceContains:*/*/*.teal"
   ],
   "main": "./out/extension.js",
   "contributes": {
