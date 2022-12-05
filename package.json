@@ -1,6 +1,6 @@
 {
   "name": "teal",
-  "displayName": "teal",
+  "displayName": "TEAL",
   "description": "Algorand TEAL language support for Visual Studio Code",
   "author": {
     "name": "DragMZ"
@@ -14,28 +14,38 @@
   "repository": {
     "url": "https://github.com/dragmz/vscode-teal"
   },
-  "private": true,
+  "activationEvents": [
+    "onLanguage:teal"
+  ],
   "categories": [
     "Programming Languages",
     "Linters"
   ],
-  "activationEvents": [
-    "onLanguage:teal",
-    "workspaceContains:*.teal",
-    "workspaceContains:*/*.teal",
-    "workspaceContains:*/*/*.teal"
-  ],
   "main": "./out/extension.js",
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
   "contributes": {
     "languages": [
       {
         "id": "teal",
+        "aliases": [
+          "teal"
+        ],
         "extensions": [
           ".teal"
         ],
-        "aliases": [
-          "TEAL"
-        ]
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "teal",
+        "scopeName": "source.teal",
+        "path": "./syntaxes/teal.tmLanguage.json"
       }
     ]
   },
@@ -58,7 +68,9 @@
     "glob": "^8.0.3",
     "mocha": "^10.1.0",
     "typescript": "^4.9.3",
-    "@vscode/test-electron": "^2.2.0",
+    "@vscode/test-electron": "^2.2.0"
+  },
+  "dependencies": {
     "vscode-languageclient": "^8.0.2"
   }
 }
