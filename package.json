@@ -7,7 +7,7 @@
   },
   "publisher": "DragMZ",
   "license": "MIT",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.73.0"
   },
@@ -15,7 +15,8 @@
     "url": "https://github.com/dragmz/vscode-teal"
   },
   "activationEvents": [
-    "onLanguage:teal"
+    "onLanguage:teal",
+    "onCommand:teal.tools.install"
   ],
   "categories": [
     "Programming Languages",
@@ -29,6 +30,12 @@
     }
   },
   "contributes": {
+    "commands": [
+      {
+        "command": "teal.tools.install",
+        "title": "TEAL: Install/Update Tools"
+      }
+    ],
     "languages": [
       {
         "id": "teal",
