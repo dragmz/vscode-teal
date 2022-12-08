@@ -2,9 +2,16 @@
 
 Algorand TEAL language support for Visual Studio Code
 
-## Usage
+## Dependencies
 
-Make sure to install tealsp (TEAL LSP server) first:
+This extension depends on tealsp (TEAL LSP Server). The LSP server can be installed using a command or manually:
+
+## Using a command to install tealsp
+
+- Install this Visual Studio Code extension
+- Execute 'TEAL: Install/Update Tools' command
+
+### Installing tealsp manually
 
 - Linux
 ```commandline
@@ -16,4 +23,4 @@ GOPROXY=direct go install github.com/dragmz/teal/cmd/tealsp@latest
 set GOPROXY=direct && go install github.com/dragmz/teal/cmd/tealsp@latest
 ```
 
-and then install the extension.
+- Then install this Visual Studio Code extension
