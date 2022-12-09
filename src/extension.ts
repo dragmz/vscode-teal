@@ -21,6 +21,24 @@ async function download(path: vscode.Uri) {
 		const data = new Uint8Array(buff);
 
 		if (data) {
+			const exists = await (async () => {
+				try {
+					await vscode.workspace.fs.stat(path);
+					return true;
+				} catch {
+					return false;
+				}
+			})();
+
+			if (exists) {
+				try {
+					await vscode.workspace.fs.delete(path);
+				} catch (e) {
+					vscode.window.showErrorMessage(`TEAL Install/Update Tools failed: ${e}`);
+					throw e;
+				}
+			}
+
 			await vscode.workspace.fs.writeFile(path, data);
 		}
 	}
