@@ -141,6 +141,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		} catch (e) {
 			console.error(e);
 			vscode.window.showErrorMessage("Failed to update TEAL Tools.");
+			throw e;
 		}
 
 		await client.start();
