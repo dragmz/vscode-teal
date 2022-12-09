@@ -15,53 +15,25 @@ async function download(path: vscode.Uri) {
 	const name = `tealsp_${process.platform}_${process.arch}${ext}`;
 	const url = `https://github.com/dragmz/teal/releases/download/dev/${name}`;
 
-	try {
-		const resp = await fetch(url);
-		const buff = await resp.buffer();
-		const data = new Uint8Array(buff);
+	const resp = await fetch(url);
+	const buff = await resp.buffer();
+	const data = new Uint8Array(buff);
 
-		if (data) {
-			const exists = await (async () => {
-				try {
-					await vscode.workspace.fs.stat(path);
-					return true;
-				} catch {
-					return false;
-				}
-			})();
-
-			if (exists) {
-				try {
-					await vscode.workspace.fs.delete(path);
-				} catch (e) {
-					vscode.window.showErrorMessage(`TEAL Install/Update Tools failed: ${e}`);
-					throw e;
-				}
+	if (data) {
+		const exists = await (async () => {
+			try {
+				await vscode.workspace.fs.stat(path);
+				return true;
+			} catch {
+				return false;
 			}
+		})();
 
-			await vscode.workspace.fs.writeFile(path, data);
+		if (exists) {
+			await vscode.workspace.fs.delete(path);
 		}
-	}
-	catch (e) {
-		console.error(e);
-	}
-}
 
-async function install(direct: boolean) {
-	let env = {};
-
-	if (direct) {
-		// eslint-disable-next-line @typescript-eslint/naming-convention
-		env = Object.assign(process.env, { GOPROXY: "direct" });
-	} else {
-		env = process.env;
-	}
-
-	const tools = ["github.com/dragmz/teal/cmd/tealsp@latest"];
-	for (const tool of tools) {
-		execFileSync("go", ["install", tool], {
-			env: env
-		});
+		await vscode.workspace.fs.writeFile(path, data);
 	}
 }
 
@@ -140,8 +112,8 @@ export async function activate(context: vscode.ExtensionContext) {
 			await download(uri);
 		} catch (e) {
 			console.error(e);
-			vscode.window.showErrorMessage("Failed to update TEAL Tools.");
-			throw e;
+			vscode.window.showErrorMessage(`Failed to update TEAL Tools; make sure another tealsp process instance isn't already running or delete the file manually and retry - file path: ${uri.fsPath}, error details: ${e}`);
+			return;
 		}
 
 		await client.start();
