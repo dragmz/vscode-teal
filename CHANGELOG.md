@@ -12,3 +12,6 @@
 
 ## v0.0.8
 - Fixed to chmod the downloaded tealsp binary so it can be executed
+
+## v0.0.9
+- Check for tools update on startup

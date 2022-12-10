@@ -11,36 +11,102 @@ import {
 
 import fs = require('fs');
 
+const versionFileName = "version";
+
 const ext = process.platform === "win32" ? ".exe" : "";
 
-async function download(path: vscode.Uri) {
+function makeTealspPath(dir: vscode.Uri): vscode.Uri {
+	return vscode.Uri.joinPath(dir, `tealsp${ext}`);
+}
+
+function makeVersionPath(dir: vscode.Uri): vscode.Uri {
+	return vscode.Uri.joinPath(dir, `version`);
+}
+
+async function get(url: string): Promise<Buffer> {
+	const resp = await fetch(url);
+	const buff = await resp.buffer();
+
+	return buff;
+}
+
+async function exists(path: vscode.Uri): Promise<boolean> {
+	try {
+		await vscode.workspace.fs.stat(path);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+async function upgradable(dir: vscode.Uri): Promise<boolean> {
+	try {
+		const path = makeVersionPath(dir);
+
+		if (!await exists(path)) {
+			return true;
+		}
+
+		const localbuf = await vscode.workspace.fs.readFile(path);
+		const local = localbuf.toString();
+
+		const url = `https://github.com/dragmz/teal/releases/download/dev/${versionFileName}`;
+		const remote = (await get(url)).toString();
+
+		const result = local !== remote;
+		return result;
+	} catch (e) {
+		console.error(`TEAL tools update check failed: ${e}`);
+		return false;
+	}
+}
+
+async function update(dir: vscode.Uri) {
 	const name = `tealsp_${process.platform}_${process.arch}${ext}`;
 	const url = `https://github.com/dragmz/teal/releases/download/dev/${name}`;
 
-	const resp = await fetch(url);
-	const buff = await resp.buffer();
-	const data = new Uint8Array(buff);
+	const tealspPath = makeTealspPath(dir);
+	const data = new Uint8Array(await get(url));
 
 	if (data) {
-		const exists = await (async () => {
-			try {
-				await vscode.workspace.fs.stat(path);
-				return true;
-			} catch {
-				return false;
-			}
-		})();
+		const versionPath = makeVersionPath(dir);
+		const version = await get(`https://github.com/dragmz/teal/releases/download/dev/version`);
 
-		if (exists) {
-			await vscode.workspace.fs.delete(path);
+		if (await exists(tealspPath)) {
+			await vscode.workspace.fs.delete(tealspPath);
 		}
 
-		await vscode.workspace.fs.writeFile(path, data);
+		await vscode.workspace.fs.writeFile(tealspPath, data);
 
-		const stat = fs.statSync(path.fsPath);
+		if (await exists(versionPath)) {
+			await vscode.workspace.fs.delete(versionPath);
+		}
+
+		await vscode.workspace.fs.writeFile(versionPath, version);
+
+		const stat = fs.statSync(tealspPath.fsPath);
 		const modePlusX = stat.mode | fs.constants.S_IXUSR | fs.constants.S_IXGRP | fs.constants.S_IXOTH;
 
-		fs.chmodSync(path.fsPath, modePlusX);
+		fs.chmodSync(tealspPath.fsPath, modePlusX);
+	}
+}
+
+async function tryUpdate(client: LanguageClient, uri: vscode.Uri) {
+	vscode.window.showInformationMessage("Updating TEAL Tools..");
+
+	try {
+		await client.stop();
+	} catch {
+		// ignored
+	}
+
+	try {
+		await update(uri);
+		await client.start();
+		vscode.window.showInformationMessage("TEAL Tools updated successfully.");
+	} catch (e) {
+		console.error(e);
+		vscode.window.showErrorMessage(`Failed to update TEAL Tools; make sure another tealsp process instance isn't already running or delete the file manually and retry - file path: ${uri.fsPath}, error details: ${e}`);
 	}
 }
 
@@ -52,7 +118,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	};
 
 	const dev = context.extensionMode !== vscode.ExtensionMode.Production;
-	const uri = vscode.Uri.joinPath(context.globalStorageUri, `tealsp${ext}`);
+	const uri = makeTealspPath(context.globalStorageUri);
 
 	let path = "tealsp";
 	let custom = true;
@@ -76,7 +142,8 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 		catch {
 			try {
-				await download(uri);
+				vscode.window.showInformationMessage("Installing TEAL Tools..");
+				await update(context.globalStorageUri);
 			}
 			catch (e) {
 				console.error(e);
@@ -97,7 +164,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	};
 
-	let client = new LanguageClient("TEAL Language Server", serverOptions, clientOptions);
+	const client = new LanguageClient("TEAL Language Server", serverOptions, clientOptions);
 	context.subscriptions.push(client);
 
 	await client.start();
@@ -108,23 +175,18 @@ export async function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		try {
-			await client.stop();
-		} catch {
-			// ignored
-		}
-
-		try {
-			await download(uri);
-		} catch (e) {
-			console.error(e);
-			vscode.window.showErrorMessage(`Failed to update TEAL Tools; make sure another tealsp process instance isn't already running or delete the file manually and retry - file path: ${uri.fsPath}, error details: ${e}`);
-			return;
-		}
-
-		await client.start();
-		vscode.window.showInformationMessage("TEAL Tools updated successfully.");
+		await tryUpdate(client, context.globalStorageUri);
 	}));
+
+	if (!custom) {
+		if (await upgradable(context.globalStorageUri)) {
+			const udpateMsg = "Update";
+			const answer = await vscode.window.showInformationMessage("A new version of TEAL Tools is available.", udpateMsg);
+			if (answer === udpateMsg) {
+				await tryUpdate(client, context.globalStorageUri);
+			}
+		}
+	}
 }
 
 // This method is called when your extension is deactivated
