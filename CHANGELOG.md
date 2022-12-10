@@ -9,3 +9,6 @@
 
 ## v0.0.4
 - Automatically install binary tealsp distribution from https://github.com/dragmz/teal/releases/tag/dev
+
+## v0.0.8
+- Fixed to chmod the downloaded tealsp binary so it can be executed
