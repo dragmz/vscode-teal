@@ -9,6 +9,8 @@ import {
 	ServerOptions,
 } from 'vscode-languageclient/node';
 
+import fs = require('fs');
+
 const ext = process.platform === "win32" ? ".exe" : "";
 
 async function download(path: vscode.Uri) {
@@ -34,22 +36,17 @@ async function download(path: vscode.Uri) {
 		}
 
 		await vscode.workspace.fs.writeFile(path, data);
+
+		const stat = fs.statSync(path.fsPath);
+		const modePlusX = stat.mode | fs.constants.S_IXUSR | fs.constants.S_IXGRP | fs.constants.S_IXOTH;
+
+		fs.chmodSync(path.fsPath, modePlusX);
 	}
 }
 
-function makeServerOptions(path: string): ServerOptions {
-	return {
-		run: {
-			command: path
-		},
-		debug: {
-			command: path,
-			args: ["-debug", "tealsp_debug.log"]
-		}
-	};
-}
-
 export async function activate(context: vscode.ExtensionContext) {
+	await vscode.workspace.fs.createDirectory(context.globalStorageUri);
+
 	const clientOptions: LanguageClientOptions = {
 		documentSelector: ['teal']
 	};
@@ -79,7 +76,6 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 		catch {
 			try {
-				await vscode.workspace.fs.createDirectory(context.globalStorageUri);
 				await download(uri);
 			}
 			catch (e) {
@@ -91,7 +87,17 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	})();
 
-	let client = new LanguageClient("TEAL Language Server", makeServerOptions(path), clientOptions);
+	const serverOptions: ServerOptions = {
+		run: {
+			command: path
+		},
+		debug: {
+			command: path,
+			args: ["-debug", vscode.Uri.joinPath(context.globalStorageUri, "tealsp_debug.log").fsPath]
+		}
+	};
+
+	let client = new LanguageClient("TEAL Language Server", serverOptions, clientOptions);
 	context.subscriptions.push(client);
 
 	await client.start();
