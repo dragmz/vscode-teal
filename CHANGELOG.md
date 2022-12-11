@@ -15,3 +15,6 @@
 
 ## v0.0.9
 - Check for tools update on startup
+
+## v0.0.10
+- Added icon image
