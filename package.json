@@ -73,7 +73,15 @@
               }
             }
           }
-        }
+        },
+        "initialConfigurations": [
+          {
+            "name": "Debug TEAL",
+            "type": "teal",
+            "request": "launch",
+            "program": "${file}"
+          }
+        ]
       }
     ]
   },
