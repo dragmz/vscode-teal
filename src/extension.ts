@@ -110,6 +110,17 @@ async function tryUpdate(client: LanguageClient, uri: vscode.Uri) {
 	}
 }
 
+class DebugAdapterExecutableFactory implements vscode.DebugAdapterDescriptorFactory {
+	path: string;
+
+	constructor(path: string) {
+		this.path = path;
+	}
+
+	createDebugAdapterDescriptor(_session: vscode.DebugSession, executable: vscode.DebugAdapterExecutable | undefined): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
+		return new vscode.DebugAdapterExecutable(this.path, ["dbg"]);
+	}
+}
 export async function activate(context: vscode.ExtensionContext) {
 	await vscode.workspace.fs.createDirectory(context.globalStorageUri);
 
@@ -187,6 +198,8 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 		}
 	}
+
+	vscode.debug.registerDebugAdapterDescriptorFactory("teal", new DebugAdapterExecutableFactory(path));
 }
 
 // This method is called when your extension is deactivated

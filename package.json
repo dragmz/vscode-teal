@@ -7,7 +7,7 @@
   },
   "publisher": "DragMZ",
   "license": "MIT",
-  "version": "0.0.11",
+  "version": "0.1.12",
   "icon": "images/logo.png",
   "engines": {
     "vscode": "^1.73.0"
@@ -17,7 +17,8 @@
   },
   "activationEvents": [
     "onLanguage:teal",
-    "onCommand:teal.tools.install"
+    "onCommand:teal.tools.install",
+    "onDebug"
   ],
   "categories": [
     "Programming Languages",
@@ -46,6 +47,33 @@
         "extensions": [
           ".teal"
         ]
+      }
+    ],
+    "breakpoints": [
+      {
+        "language": "teal"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "teal",
+        "label": "Debug TEAL",
+        "languages": [
+          "teal"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [
+              "program"
+            ],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Absolute path to a TEAL file."
+              }
+            }
+          }
+        }
       }
     ]
   },
