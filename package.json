@@ -7,7 +7,7 @@
   },
   "publisher": "DragMZ",
   "license": "MIT",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "icon": "images/logo.png",
   "engines": {
     "vscode": "^1.73.0"
@@ -80,6 +80,18 @@
             "type": "teal",
             "request": "launch",
             "program": "${file}"
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "TEAL Debug: Launch",
+            "description": "A new configuration for launching a TEAL program",
+            "body": {
+              "name": "Debug TEAL",
+              "type": "teal",
+              "request": "launch",
+              "program": "^\"\\${file}\""
+            }
           }
         ]
       }
