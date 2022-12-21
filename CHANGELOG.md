@@ -18,3 +18,9 @@
 
 ## v0.0.10
 - Added icon image
+
+## v0.1.12
+- Added debugger + 'Debug TEAL' configuration
+
+## v0.1.13
+- Added 'Debug TEAL' configuration snippet
