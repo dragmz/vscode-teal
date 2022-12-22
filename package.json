@@ -34,6 +34,35 @@
     }
   },
   "contributes": {
+    "configuration": {
+      "title": "TEAL",
+      "properties": {
+        "tealsp": {
+          "type": "object",
+          "scope": "resource",
+          "properties": {
+            "ui.semanticTokens": {
+              "type": "boolean",
+              "description": "Controls server side semantic tokens",
+              "default": true,
+              "scope": "resource"
+            },
+            "ui.inlayHints.named": {
+              "type":"boolean",
+              "description": "Controls inlay hints for named values",
+              "default": true,
+              "scrope": "resource"
+            },
+            "ui.inlayHints.decoded": {
+              "type":"boolean",
+              "description": "Controls inlay hints for decoded values",
+              "default": true,
+              "scrope": "resource"
+            }
+          }
+        }
+      }
+    },
     "commands": [
       {
         "command": "teal.tools.install",

@@ -122,10 +122,17 @@ class DebugAdapterExecutableFactory implements vscode.DebugAdapterDescriptorFact
 	}
 }
 export async function activate(context: vscode.ExtensionContext) {
+	const config = vscode.workspace.getConfiguration("tealsp");
+
 	await vscode.workspace.fs.createDirectory(context.globalStorageUri);
 
 	const clientOptions: LanguageClientOptions = {
-		documentSelector: ['teal']
+		documentSelector: ['teal'],
+		initializationOptions: {
+			"semanticTokens": config["ui.semanticTokens"],
+			"inlayNamed": config["ui.inlayHints.named"],
+			"inlayDecoded": config["ui.inlayHints.decoded"],
+		}
 	};
 
 	const dev = context.extensionMode !== vscode.ExtensionMode.Production;
