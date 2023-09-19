@@ -7,7 +7,7 @@
   },
   "publisher": "DragMZ",
   "license": "MIT",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "icon": "images/logo.png",
   "engines": {
     "vscode": "^1.75.0"
@@ -17,6 +17,7 @@
   },
   "activationEvents": [
     "onLanguage:teal",
+    "onCommand:teal.tools.install",
     "onDebug"
   ],
   "categories": [
