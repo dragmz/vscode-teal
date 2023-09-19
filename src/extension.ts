@@ -131,6 +131,18 @@ class DebugAdapterExecutableFactory implements vscode.DebugAdapterDescriptorFact
 			}
 		}
 
+		const algod = _session.configuration.algod ?? "";
+
+		if (algod) {
+			args = args.concat(["-algod", algod]);
+		}
+
+		const algodToken = _session.configuration.algodToken ?? "";
+
+		if (algodToken) {
+			args = args.concat(["-algod-token", algodToken]);
+		}
+
 		// resolve config into absolute path
 		return new vscode.DebugAdapterExecutable(this.path, args);
 	}

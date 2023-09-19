@@ -105,6 +105,14 @@
               "config": {
                 "type": "string",
                 "description": "Relative path to a debugging config file."
+              },
+              "algod": {
+                "type": "string",
+                "description": "Algod address."
+              },
+              "algodToken": {
+                "type": "string",
+                "description": "Algod token."
               }
             }
           }
