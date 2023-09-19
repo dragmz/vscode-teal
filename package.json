@@ -7,17 +7,16 @@
   },
   "publisher": "DragMZ",
   "license": "MIT",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "icon": "images/logo.png",
   "engines": {
-    "vscode": "^1.73.0"
+    "vscode": "^1.75.0"
   },
   "repository": {
     "url": "https://github.com/dragmz/vscode-teal"
   },
   "activationEvents": [
     "onLanguage:teal",
-    "onCommand:teal.tools.install",
     "onDebug"
   ],
   "categories": [
@@ -48,13 +47,13 @@
               "scope": "resource"
             },
             "ui.inlayHints.named": {
-              "type":"boolean",
+              "type": "boolean",
               "description": "Controls inlay hints for named values",
               "default": true,
               "scrope": "resource"
             },
             "ui.inlayHints.decoded": {
-              "type":"boolean",
+              "type": "boolean",
               "description": "Controls inlay hints for decoded values",
               "default": true,
               "scrope": "resource"
@@ -101,6 +100,10 @@
               "program": {
                 "type": "string",
                 "description": "Absolute path to a TEAL file."
+              },
+              "config": {
+                "type": "string",
+                "description": "Relative path to a debugging config file."
               }
             }
           }
@@ -138,7 +141,6 @@
   },
   "devDependencies": {
     "@types/glob": "^8.0.0",
-    "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
     "@types/vscode": "^1.73.0",
     "@typescript-eslint/eslint-plugin": "^5.45.0",
@@ -146,7 +148,6 @@
     "@vscode/test-electron": "^2.2.0",
     "eslint": "^8.28.0",
     "glob": "^8.0.3",
-    "mocha": "^10.1.0",
     "typescript": "^4.9.3"
   },
   "dependencies": {

@@ -111,16 +111,31 @@ async function tryUpdate(client: LanguageClient, uri: vscode.Uri) {
 }
 
 class DebugAdapterExecutableFactory implements vscode.DebugAdapterDescriptorFactory {
+	context: vscode.ExtensionContext;
 	path: string;
 
-	constructor(path: string) {
+	constructor(context: vscode.ExtensionContext, path: string) {
+		this.context = context;
 		this.path = path;
 	}
 
 	createDebugAdapterDescriptor(_session: vscode.DebugSession, executable: vscode.DebugAdapterExecutable | undefined): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
-		return new vscode.DebugAdapterExecutable(this.path, ["dbg"]);
+		const config = _session.configuration.config ?? "";
+
+		let args = ["dbg"];
+		if (config) {
+			args = args.concat(["-config"]);
+			const root = vscode.workspace.workspaceFolders?.[0].uri;
+			if (root) {
+				args = args.concat(vscode.Uri.joinPath(root, config).fsPath);
+			}
+		}
+
+		// resolve config into absolute path
+		return new vscode.DebugAdapterExecutable(this.path, args);
 	}
 }
+
 export async function activate(context: vscode.ExtensionContext) {
 	const config = vscode.workspace.getConfiguration("tealsp");
 
@@ -206,7 +221,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	}
 
-	vscode.debug.registerDebugAdapterDescriptorFactory("teal", new DebugAdapterExecutableFactory(path));
+	vscode.debug.registerDebugAdapterDescriptorFactory("teal", new DebugAdapterExecutableFactory(context, path));
 }
 
 // This method is called when your extension is deactivated
