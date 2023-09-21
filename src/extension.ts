@@ -233,7 +233,32 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	}
 
-	vscode.debug.registerDebugAdapterDescriptorFactory("teal", new DebugAdapterExecutableFactory(context, path));
+	context.subscriptions.push(
+		vscode.debug.registerDebugAdapterDescriptorFactory("teal", new DebugAdapterExecutableFactory(context, path)));
+
+	context.subscriptions.push(
+		vscode.debug.registerDebugConfigurationProvider("teal", new TealDebugConfigurationProvider()));
+}
+
+class TealDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
+	public resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, debugConfiguration: vscode.DebugConfiguration, token?: vscode.CancellationToken | undefined): vscode.ProviderResult<vscode.DebugConfiguration> {
+		const activeEditor = vscode.window.activeTextEditor;
+
+		if (!debugConfiguration || !debugConfiguration.request) {
+			if (!activeEditor || activeEditor.document.languageId !== "teal") {
+				return;
+			}
+
+			debugConfiguration = {
+				type: "teal",
+				request: "launch",
+				name: "Debug TEAL",
+				program: activeEditor.document.uri.fsPath,
+			};
+		}
+
+		return debugConfiguration;
+	}
 }
 
 // This method is called when your extension is deactivated
