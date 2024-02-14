@@ -50,7 +50,7 @@ async function upgradable(dir: vscode.Uri): Promise<boolean> {
 		const localbuf = await vscode.workspace.fs.readFile(path);
 		const local = localbuf.toString();
 
-		const url = `https://github.com/dragmz/teal/releases/download/dev/${versionFileName}`;
+		const url = `https://github.com/dragmz/teal-public/releases/download/dev/${versionFileName}`;
 		const remote = (await get(url)).toString();
 
 		const result = local !== remote;
@@ -63,14 +63,14 @@ async function upgradable(dir: vscode.Uri): Promise<boolean> {
 
 async function update(dir: vscode.Uri) {
 	const name = `tealsp_${process.platform}_${process.arch}${ext}`;
-	const url = `https://github.com/dragmz/teal/releases/download/dev/${name}`;
+	const url = `https://github.com/dragmz/teal-public/releases/download/dev/${name}`;
 
 	const tealspPath = makeTealspPath(dir);
 	const data = new Uint8Array(await get(url));
 
 	if (data) {
 		const versionPath = makeVersionPath(dir);
-		const version = await get(`https://github.com/dragmz/teal/releases/download/dev/version`);
+		const version = await get(`https://github.com/dragmz/teal-public/releases/download/dev/version`);
 
 		if (await exists(tealspPath)) {
 			await vscode.workspace.fs.delete(tealspPath);

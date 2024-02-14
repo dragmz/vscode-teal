@@ -24,3 +24,6 @@
 
 ## v0.1.13
 - Added 'Debug TEAL' configuration snippet
+
+## v0.1.19
+- Take binaries from teal-public repo
