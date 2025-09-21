@@ -110,44 +110,6 @@ async function tryUpdate(client: LanguageClient, uri: vscode.Uri) {
 	}
 }
 
-class DebugAdapterExecutableFactory implements vscode.DebugAdapterDescriptorFactory {
-	context: vscode.ExtensionContext;
-	path: string;
-
-	constructor(context: vscode.ExtensionContext, path: string) {
-		this.context = context;
-		this.path = path;
-	}
-
-	createDebugAdapterDescriptor(_session: vscode.DebugSession, executable: vscode.DebugAdapterExecutable | undefined): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
-		const config = _session.configuration.config ?? "";
-
-		let args = ["dbg"];
-		if (config) {
-			args = args.concat(["-config"]);
-			const root = vscode.workspace.workspaceFolders?.[0].uri;
-			if (root) {
-				args = args.concat(vscode.Uri.joinPath(root, config).fsPath);
-			}
-		}
-
-		const algod = _session.configuration.algod ?? "";
-
-		if (algod) {
-			args = args.concat(["-algod", algod]);
-		}
-
-		const algodToken = _session.configuration.algodToken ?? "";
-
-		if (algodToken) {
-			args = args.concat(["-algod-token", algodToken]);
-		}
-
-		// resolve config into absolute path
-		return new vscode.DebugAdapterExecutable(this.path, args);
-	}
-}
-
 export async function activate(context: vscode.ExtensionContext) {
 	const config = vscode.workspace.getConfiguration("tealsp");
 
@@ -231,33 +193,6 @@ export async function activate(context: vscode.ExtensionContext) {
 				await tryUpdate(client, context.globalStorageUri);
 			}
 		}
-	}
-
-	context.subscriptions.push(
-		vscode.debug.registerDebugAdapterDescriptorFactory("teal", new DebugAdapterExecutableFactory(context, path)));
-
-	context.subscriptions.push(
-		vscode.debug.registerDebugConfigurationProvider("teal", new TealDebugConfigurationProvider()));
-}
-
-class TealDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
-	public resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, debugConfiguration: vscode.DebugConfiguration, token?: vscode.CancellationToken | undefined): vscode.ProviderResult<vscode.DebugConfiguration> {
-		const activeEditor = vscode.window.activeTextEditor;
-
-		if (!debugConfiguration || !debugConfiguration.request) {
-			if (!activeEditor || activeEditor.document.languageId !== "teal") {
-				return;
-			}
-
-			debugConfiguration = {
-				type: "teal",
-				request: "launch",
-				name: "Debug TEAL",
-				program: activeEditor.document.uri.fsPath,
-			};
-		}
-
-		return debugConfiguration;
 	}
 }
 

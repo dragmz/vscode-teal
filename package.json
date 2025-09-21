@@ -7,7 +7,7 @@
   },
   "publisher": "DragMZ",
   "license": "MIT",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "icon": "images/logo.png",
   "engines": {
     "vscode": "^1.75.0"
@@ -16,13 +16,11 @@
     "url": "https://github.com/dragmz/vscode-teal"
   },
   "activationEvents": [
-    "onLanguage:teal",
-    "onDebug"
+    "onLanguage:teal"
   ],
   "categories": [
     "Programming Languages",
     "Linters",
-    "Debuggers",
     "Formatters"
   ],
   "main": "./out/extension.js",
@@ -82,60 +80,6 @@
     "breakpoints": [
       {
         "language": "teal"
-      }
-    ],
-    "debuggers": [
-      {
-        "type": "teal",
-        "label": "Debug TEAL",
-        "languages": [
-          "teal"
-        ],
-        "configurationAttributes": {
-          "launch": {
-            "required": [
-              "program"
-            ],
-            "properties": {
-              "program": {
-                "type": "string",
-                "description": "Absolute path to a TEAL file."
-              },
-              "config": {
-                "type": "string",
-                "description": "Relative path to a debugging config file."
-              },
-              "algod": {
-                "type": "string",
-                "description": "Algod address."
-              },
-              "algodToken": {
-                "type": "string",
-                "description": "Algod token."
-              }
-            }
-          }
-        },
-        "initialConfigurations": [
-          {
-            "name": "Debug TEAL",
-            "type": "teal",
-            "request": "launch",
-            "program": "${file}"
-          }
-        ],
-        "configurationSnippets": [
-          {
-            "label": "TEAL Debug: Launch",
-            "description": "A new configuration for launching a TEAL program",
-            "body": {
-              "name": "Debug TEAL",
-              "type": "teal",
-              "request": "launch",
-              "program": "^\"\\${file}\""
-            }
-          }
-        ]
       }
     ]
   },
