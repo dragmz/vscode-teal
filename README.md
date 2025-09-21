@@ -11,7 +11,6 @@ Just install the extension in your VS Code.
 - **Code completion** - suggests opcodes while typing or activated manually with **Ctrl+Space**; includes documentation and snippets
 - **Signature help** - opcodes signature information popup activated with **Ctrl+Shift+Space**
 - **Hover info** - documentation appears when hovering over an opcode
-- **Code formatting** (thanks to [joe-p/tealfmt](https://github.com/joe-p/tealfmt/)) - use unified TEAL formatting for your code with **Shift+Alt+F**
 - **Go to definition** - jump to a referenced label with F12 or **Ctrl+LMB**
 - **Go to symbol** - search and go to labels with **Ctrl+Shift+O**
 - **Document outline** - see all the labels in the Outline view
