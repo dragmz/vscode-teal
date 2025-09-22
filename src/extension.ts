@@ -26,6 +26,9 @@ function makeVersionPath(dir: vscode.Uri): vscode.Uri {
 
 async function get(url: string): Promise<Buffer> {
 	const resp = await fetch(url);
+	if (!resp.ok) {
+		throw new Error(`Failed to fetch ${url}: ${resp.status} ${resp.statusText}`);
+	}
 	const buff = await resp.buffer();
 
 	return buff;
