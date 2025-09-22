@@ -11,7 +11,7 @@ import {
 
 import fs = require('fs');
 
-const versionFileName = `version__${process.platform}_${process.arch}`;
+const versionFileName = `version_${process.platform}_${process.arch}`;
 const versionUrl = `https://github.com/dragmz/tealsp/releases/download/dev/${versionFileName}`;
 
 const ext = process.platform === "win32" ? ".exe" : "";
