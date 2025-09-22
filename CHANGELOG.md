@@ -27,3 +27,6 @@
 
 ## v0.1.19
 - Take binaries from teal-public repo
+
+## v0.1.20
+- Switched to tealsp
