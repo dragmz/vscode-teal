@@ -7,7 +7,7 @@
   },
   "publisher": "DragMZ",
   "license": "MIT",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "icon": "images/logo.png",
   "engines": {
     "vscode": "^1.75.0"
@@ -64,6 +64,10 @@
       {
         "command": "teal.tools.install",
         "title": "TEAL: Install/Update Tools"
+      },
+      {
+        "command": "teal.goto.pc",
+        "title": "TEAL: Go to PC"
       }
     ],
     "languages": [

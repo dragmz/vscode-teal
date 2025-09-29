@@ -188,6 +188,45 @@ export async function activate(context: vscode.ExtensionContext) {
 		await tryUpdate(client, context.globalStorageUri);
 	}));
 
+	context.subscriptions.push(vscode.commands.registerCommand("teal.goto.pc", async () => {
+		// ask for a PC value
+		const pcStr = await vscode.window.showInputBox({
+			prompt: "Enter the TEAL program counter (PC) value to go to",
+			placeHolder: "e.g. 42",
+			validateInput: (value) => {
+				const num = Number(value);
+				return !isNaN(num) && num >= 0 ? null : "Invalid PC value";
+			}
+		});
+
+		if (pcStr === undefined) {
+			return;
+		}
+
+		const pc = Number(pcStr);
+
+		const response = await client.sendRequest("workspace/executeCommand", {
+			command: "teal.pc.resolve",
+			arguments: {
+				uri: vscode.window.activeTextEditor?.document.uri.toString(),
+				pc: pc
+			}
+		}) as { line: number, character: number } | null;
+
+		if (!response) {
+			vscode.window.showErrorMessage(`PC value ${pc} not found in the current document.`);
+			return;
+		}
+
+		const position = new vscode.Position(response.line, response.character);
+		const editor = vscode.window.activeTextEditor;
+
+		if (editor) {
+			editor.selection = new vscode.Selection(position, position);
+			editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
+		}
+	}));
+
 	if (!custom) {
 		if (await upgradable(context.globalStorageUri)) {
 			const udpateMsg = "Update";

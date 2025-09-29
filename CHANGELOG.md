@@ -30,3 +30,6 @@
 
 ## v0.1.20
 - Switched to tealsp
+
+## v0.1.21
+- Added "TEAL: Go to PC" command
