@@ -55,6 +55,18 @@
               "description": "Controls inlay hints for decoded values",
               "default": true,
               "scrope": "resource"
+            },
+            "ui.pc.lens": {
+              "type": "boolean",
+              "description": "Enables PC code lens",
+              "default": false,
+              "scope": "resource"
+            },
+            "ui.pc.inlay": {
+              "type": "boolean",
+              "description": "Enables PC inlay hints",
+              "default": false,
+              "scope": "resource"
             }
           }
         }

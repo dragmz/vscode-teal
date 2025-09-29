@@ -124,6 +124,8 @@ export async function activate(context: vscode.ExtensionContext) {
 			"semanticTokens": config["ui.semanticTokens"],
 			"inlayNamed": config["ui.inlayHints.named"],
 			"inlayDecoded": config["ui.inlayHints.decoded"],
+			"pcLens": config["ui.pc.lens"],
+			"pcInlay": config["ui.pc.inlay"],
 		}
 	};
 
