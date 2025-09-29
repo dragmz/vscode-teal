@@ -33,3 +33,6 @@
 
 ## v0.1.21
 - Added "TEAL: Go to PC" command
+
+## v0.1.22
+- Added PC configuration
