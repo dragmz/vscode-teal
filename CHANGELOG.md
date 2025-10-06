@@ -35,4 +35,7 @@
 - Added "TEAL: Go to PC" command
 
 ## v0.1.22
-- Added PC configuration
+- Added PC configuration (ui.pc.inlay, ui.pc.lens)
+
+## v0.1.23
+- Added program size configuration (ui.programSize)

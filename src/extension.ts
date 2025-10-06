@@ -126,6 +126,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			"inlayDecoded": config["ui.inlayHints.decoded"],
 			"pcLens": config["ui.pc.lens"],
 			"pcInlay": config["ui.pc.inlay"],
+			"programSize": config["ui.programSize"],
 		}
 	};
 

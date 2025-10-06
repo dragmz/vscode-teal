@@ -67,6 +67,22 @@
               "description": "Enables PC inlay hints",
               "default": false,
               "scope": "resource"
+            },
+            "ui.programSize": {
+              "type": "boolean",
+              "description": "Show program size in status bar",
+              "default": true,
+              "scope": "resource"
+            },
+            "tealsp.channel": {
+              "type": "string",
+              "description": "tealsp release channel (stable/dev)",
+              "default": "dev",
+              "enum": [
+                "stable",
+                "dev"
+              ],
+              "scope": "resource"
             }
           }
         }
