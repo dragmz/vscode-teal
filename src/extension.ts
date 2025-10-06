@@ -11,10 +11,25 @@ import {
 
 import fs = require('fs');
 
-const versionFileName = `version_${process.platform}_${process.arch}`;
-const versionUrl = `https://github.com/dragmz/tealsp/releases/download/dev/${versionFileName}`;
-
 const ext = process.platform === "win32" ? ".exe" : "";
+
+function getChannelUrl(context: vscode.ExtensionContext): string {
+	const version = context.extension.packageJSON.version;
+	const minor = parseInt(version.split(".")[1]);
+	const isPreRelease = minor % 2 === 1;
+
+	const config = vscode.workspace.getConfiguration("tealsp");
+	const channel = config.get<string>("tealsp.channel", isPreRelease ? "dev" : "stable");
+
+	return `https://github.com/dragmz/tealsp/releases/download/${channel}`;
+}
+
+function getVersionUrl(context: vscode.ExtensionContext): string {
+	const versionFileName = `version_${process.platform}_${process.arch}`;
+	const versionUrl = `${getChannelUrl(context)}/${versionFileName}`;
+
+	return versionUrl;
+}
 
 function makeTealspPath(dir: vscode.Uri): vscode.Uri {
 	return vscode.Uri.joinPath(dir, `tealsp${ext}`);
@@ -43,7 +58,9 @@ async function exists(path: vscode.Uri): Promise<boolean> {
 	}
 }
 
-async function upgradable(dir: vscode.Uri): Promise<boolean> {
+async function upgradable(context: vscode.ExtensionContext): Promise<boolean> {
+	const dir = context.globalStorageUri;
+
 	try {
 		const path = makeVersionPath(dir);
 
@@ -54,7 +71,7 @@ async function upgradable(dir: vscode.Uri): Promise<boolean> {
 		const localbuf = await vscode.workspace.fs.readFile(path);
 		const local = localbuf.toString();
 
-		const remote = (await get(versionUrl)).toString();
+		const remote = (await get(getVersionUrl(context))).toString();
 
 		const result = local !== remote;
 		return result;
@@ -64,16 +81,17 @@ async function upgradable(dir: vscode.Uri): Promise<boolean> {
 	}
 }
 
-async function update(dir: vscode.Uri) {
+async function update(context: vscode.ExtensionContext) {
+	const dir = context.globalStorageUri;
 	const name = `tealsp_${process.platform}_${process.arch}${ext}`;
-	const url = `https://github.com/dragmz/tealsp/releases/download/dev/${name}`;
+	const url = `${getChannelUrl(context)}/${name}`;
 
 	const tealspPath = makeTealspPath(dir);
 	const data = new Uint8Array(await get(url));
 
 	if (data) {
 		const versionPath = makeVersionPath(dir);
-		const version = await get(versionUrl);
+		const version = await get(getVersionUrl(context));
 
 		if (await exists(tealspPath)) {
 			await vscode.workspace.fs.delete(tealspPath);
@@ -94,7 +112,8 @@ async function update(dir: vscode.Uri) {
 	}
 }
 
-async function tryUpdate(client: LanguageClient, uri: vscode.Uri) {
+async function tryUpdate(context: vscode.ExtensionContext, client: LanguageClient) {
+	const uri = context.globalStorageUri;
 	vscode.window.showInformationMessage("Updating TEAL Tools..");
 
 	try {
@@ -104,7 +123,7 @@ async function tryUpdate(client: LanguageClient, uri: vscode.Uri) {
 	}
 
 	try {
-		await update(uri);
+		await update(context);
 		await client.start();
 		vscode.window.showInformationMessage("TEAL Tools updated successfully.");
 	} catch (e) {
@@ -156,7 +175,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		catch {
 			try {
 				vscode.window.showInformationMessage("Installing TEAL Tools..");
-				await update(context.globalStorageUri);
+				await update(context);
 			}
 			catch (e) {
 				console.error(e);
@@ -188,7 +207,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		await tryUpdate(client, context.globalStorageUri);
+		await tryUpdate(context, client);
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand("teal.goto.pc", async () => {
@@ -231,11 +250,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	}));
 
 	if (!custom) {
-		if (await upgradable(context.globalStorageUri)) {
+		if (await upgradable(context)) {
 			const udpateMsg = "Update";
 			const answer = await vscode.window.showInformationMessage("A new version of TEAL Tools is available.", udpateMsg);
 			if (answer === udpateMsg) {
-				await tryUpdate(client, context.globalStorageUri);
+				await tryUpdate(context, client);
 			}
 		}
 	}

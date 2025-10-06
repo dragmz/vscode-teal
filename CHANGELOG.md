@@ -37,5 +37,6 @@
 ## v0.1.22
 - Added PC configuration (ui.pc.inlay, ui.pc.lens)
 
-## v0.1.23
+## v0.2.1
 - Added program size configuration (ui.programSize)
+- Use stable channel by default
