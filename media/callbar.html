@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Smart Contract</title>
+    <style>
+        body {
+            color: var(--vscode-foreground);
+            background-color: var(--vscode-background);
+            font-family: var(--vscode-font-family);
+            font-size: var(--vscode-font-size);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        h3 {
+            margin: 0 0 10px 0;
+            font-weight: 600;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        select,
+        input[type="text"] {
+            width: 100%;
+            padding: 5px 8px;
+            border: 1px solid var(--vscode-input-border);
+            background-color: var(--vscode-input-background);
+            color: var(--vscode-input-foreground);
+            border-radius: 3px;
+            font-family: inherit;
+            font-size: inherit;
+            box-sizing: border-box;
+        }
+
+        select:focus,
+        input[type="text"]:focus {
+            outline: 1px solid var(--vscode-focusBorder);
+        }
+
+        button {
+            padding: 6px 12px;
+            background-color: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border: 1px solid var(--vscode-button-border);
+            border-radius: 3px;
+            font-family: inherit;
+            font-size: inherit;
+            cursor: pointer;
+            transition: background-color 0.1s;
+        }
+
+        button:hover {
+            background-color: var(--vscode-button-hoverBackground);
+        }
+
+        button:focus {
+            outline: 1px solid var(--vscode-focusBorder);
+        }
+    </style>
+</head>
+
+<body>
+    <h3>Call smart contract</h3>
+    <div>
+        <label for="network">Select Network:</label>
+        <select id="network">
+            <option value="Mainnet">Mainnet</option>
+            <option value="Testnet">Testnet</option>
+            <option value="Betanet">Betanet</option>
+        </select>
+    </div>
+    <div>
+        <label for="appId">Application ID:</label>
+        <input type="text" id="appId" />
+    </div>
+    <button id="debug">Debug</button>
+    <script>
+        const vscode = acquireVsCodeApi();
+        document.getElementById('debug').addEventListener('click', () => {
+            const network = document.getElementById('network').value;
+            const id = document.getElementById('appId').value;
+            vscode.postMessage({ command: 'debug', network, id });
+        });
+    </script>
+</body>
+
+</html>

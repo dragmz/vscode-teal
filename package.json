@@ -31,6 +31,25 @@
     }
   },
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "callbar",
+          "title": "Call smart contract",
+          "icon": "images/logo.png"
+        }
+      ]
+    },
+    "views": {
+      "callbar": [
+        {
+          "id": "callbarview",
+          "name": "Call smart contract UI",
+          "icon": "images/logo.png",
+          "type": "webview"
+        }
+      ]
+    },
     "configuration": {
       "title": "TEAL",
       "properties": {
@@ -96,6 +115,18 @@
       {
         "command": "teal.goto.pc",
         "title": "TEAL: Go to PC"
+      },
+      {
+        "command": "teal.decompile",
+        "title": "TEAL: Decompile from bytecode"
+      },
+      {
+        "command": "teal.call.app",
+        "title": "TEAL: Call smart contract"
+      },
+      {
+        "command": "teal.sourcemap.generate",
+        "title": "TEAL: Generate Source Map"
       }
     ],
     "languages": [
@@ -136,6 +167,7 @@
   },
   "dependencies": {
     "@types/node-fetch": "^2.6.2",
+    "algosdk": "^3.5.2",
     "node-fetch": "^2.6.7",
     "vscode-languageclient": "^8.0.2"
   }
