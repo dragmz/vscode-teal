@@ -232,7 +232,11 @@ async function debugCurrentDocument(client: LanguageClient, network: string) {
 	const traceDoc = await vscode.workspace.openTextDocument(traceFileUri);
 	await vscode.window.showTextDocument(traceDoc);
 
-	await vscode.commands.executeCommand("extension.avmDebugger.debugOpenTraceFile");
+	try {
+		await vscode.commands.executeCommand("extension.avmDebugger.debugOpenTraceFile");
+	} catch (e) {
+		vscode.window.showErrorMessage("Failed to open AVM debugger. Make sure the 'AlgoKit AVM Debugger' extension is installed.");
+	}
 }
 
 export class CallBarProvider implements vscode.WebviewViewProvider {

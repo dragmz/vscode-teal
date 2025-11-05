@@ -15,6 +15,9 @@
   "repository": {
     "url": "https://github.com/dragmz/vscode-teal"
   },
+  "extensionPack": [
+    "AlgorandFoundation.algokit-avm-vscode-debugger"
+  ],
   "activationEvents": [
     "onLanguage:teal"
   ],
