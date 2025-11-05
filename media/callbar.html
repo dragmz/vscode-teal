@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Call Smart Contract</title>
+    <title>Simulate Transactions</title>
     <style>
         body {
             color: var(--vscode-foreground);
@@ -70,7 +70,6 @@
 </head>
 
 <body>
-    <h3>Call smart contract</h3>
     <div>
         <label for="network">Select Network:</label>
         <select id="network">
@@ -79,7 +78,7 @@
             <option value="Betanet">Betanet</option>
         </select>
     </div>
-    <button id="debug">Debug</button>
+    <button id="debug">Simulate</button>
     <script>
         const vscode = acquireVsCodeApi();
         document.getElementById('debug').addEventListener('click', () => {

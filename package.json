@@ -35,7 +35,7 @@
       "activitybar": [
         {
           "id": "callbar",
-          "title": "Call smart contract",
+          "title": "TEAL",
           "icon": "images/logo.png"
         }
       ]
@@ -44,7 +44,7 @@
       "callbar": [
         {
           "id": "callbarview",
-          "name": "Call smart contract UI",
+          "name": "Simulate Transactions",
           "icon": "images/logo.png",
           "type": "webview"
         }
