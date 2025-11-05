@@ -40,3 +40,9 @@
 ## v0.2.1
 - Added program size configuration (ui.programSize)
 - Use stable channel by default
+
+## v0.3.1
+- Prerelease version
+
+## v0.3.2
+- Simulate transactions
