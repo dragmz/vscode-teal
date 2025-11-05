@@ -79,17 +79,12 @@
             <option value="Betanet">Betanet</option>
         </select>
     </div>
-    <div>
-        <label for="appId">Application ID:</label>
-        <input type="text" id="appId" />
-    </div>
     <button id="debug">Debug</button>
     <script>
         const vscode = acquireVsCodeApi();
         document.getElementById('debug').addEventListener('click', () => {
             const network = document.getElementById('network').value;
-            const id = document.getElementById('appId').value;
-            vscode.postMessage({ command: 'debug', network, id });
+            vscode.postMessage({ command: 'debug', network });
         });
     </script>
 </body>

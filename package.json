@@ -117,16 +117,20 @@
         "title": "TEAL: Go to PC"
       },
       {
+        "command": "teal.download",
+        "title": "TEAL: Download from blockchain"
+      },
+      {
         "command": "teal.decompile",
         "title": "TEAL: Decompile from bytecode"
       },
       {
-        "command": "teal.call.app",
-        "title": "TEAL: Call smart contract"
-      },
-      {
         "command": "teal.sourcemap.generate",
         "title": "TEAL: Generate Source Map"
+      },
+      {
+        "command": "teal.simulate",
+        "title": "TEAL: Simulate Transactions"
       }
     ],
     "languages": [
@@ -168,6 +172,7 @@
   "dependencies": {
     "@types/node-fetch": "^2.6.2",
     "algosdk": "^3.5.2",
+    "js-sha512": "^0.9.0",
     "node-fetch": "^2.6.7",
     "vscode-languageclient": "^8.0.2"
   }
