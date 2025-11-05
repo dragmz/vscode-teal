@@ -1,0 +1,101 @@
+{
+    "Algorand Application Call Transaction": {
+        "scope": "json",
+        "prefix": "appl",
+        "description": "Application call transaction",
+        "body": [
+            "{",
+            "  \"type\": \"appl\",",
+            "  \"snd\": \"${1:SENDER_ADDR}\",",
+            "  \"apid\": ${2:APP_ID},",
+            "  \"apan\": ${3:ON_COMPLETE},",
+            "  \"apaa\": [\"${4:ARG1}\", \"${5:ARG2}\"],",
+            "  \"fee\": 1000",
+            "}"
+        ]
+    },
+    "Algorand Payment Transaction": {
+        "scope": "json",
+        "prefix": "pay",
+        "description": "Algorand Payment Transaction",
+        "body": [
+            "{",
+            "  \"type\": \"pay\",",
+            "  \"snd\": \"${1:SENDER_ADDR}\",",
+            "  \"rcv\": \"${2:RECEIVER_ADDR}\",",
+            "  \"amt\": ${3:1000000},",
+            "  \"fee\": 1000",
+            "}"
+        ]
+    },
+    "Algorand Asset Transfer Transaction": {
+        "scope": "json",
+        "prefix": "axfer",
+        "description": "Asset transfer transaction",
+        "body": [
+            "{",
+            "  \"type\": \"axfer\",",
+            "  \"snd\": \"${1:SENDER_ADDR}\",",
+            "  \"arcv\": \"${2:RECEIVER_ADDR}\",",
+            "  \"xaid\": ${3:ASSET_ID},",
+            "  \"aamt\": ${4:AMOUNT},",
+            "  \"fee\": 1000",
+            "}"
+        ]
+    },
+    "Algorand Asset Configuration Transaction": {
+        "scope": "json",
+        "prefix": "acfg",
+        "description": "Asset configuration transaction",
+        "body": [
+            "{",
+            "  \"type\": \"acfg\",",
+            "  \"snd\": \"${1:SENDER_ADDR}\",",
+            "  \"caid\": ${2:0},",
+            "  \"apar\": {",
+            "    \"t\": ${3:1000000},",
+            "    \"dc\": ${4:0},",
+            "    \"df\": ${5:false},",
+            "    \"un\": \"${6:UNIT_NAME}\",",
+            "    \"an\": \"${7:ASSET_NAME}\",",
+            "    \"au\": \"${8:ASSET_URL}\"",
+            "  },",
+            "  \"fee\": 1000",
+            "}"
+        ]
+    },
+    "Algorand Key Registration Transaction": {
+        "scope": "json",
+        "prefix": "keyreg",
+        "description": "Key registration transaction",
+        "body": [
+            "{",
+            "  \"type\": \"keyreg\",",
+            "  \"snd\": \"${1:SENDER_ADDR}\",",
+            "  \"votekey\": \"${2:VOTE_PUBLIC_KEY}\",",
+            "  \"selkey\": \"${3:SELECTION_PUBLIC_KEY}\",",
+            "  \"sprfkey\": \"${4:STATE_PROOF_KEY}\",",
+            "  \"votefst\": ${5:1000},",
+            "  \"votelst\": ${6:2000},",
+            "  \"votekd\": ${7:10},",
+            "  \"nonpart\": ${8:false},",
+            "  \"fee\": 1000",
+            "}"
+        ]
+    },
+    "Algorand Asset Freeze Transaction": {
+        "scope": "json",
+        "prefix": "afrz",
+        "description": "Asset freeze transaction",
+        "body": [
+            "{",
+            "  \"type\": \"afrz\",",
+            "  \"snd\": \"${1:SENDER_ADDR}\",",
+            "  \"fadd\": \"${2:FREEZE_ACCOUNT}\",",
+            "  \"faid\": ${3:ASSET_ID},",
+            "  \"afrz\": ${4:true},",
+            "  \"fee\": 1000",
+            "}"
+        ]
+    }
+}

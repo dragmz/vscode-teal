@@ -1,0 +1,396 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://example.com/schemas/algorand-transaction-array.schema.json",
+    "title": "Algorand Transaction Groups",
+    "description": "Schema for arrays of Algorand transaction groups, where each group is an array of transactions.",
+    "type": "array",
+    "items": {
+        "type": "array",
+        "title": "Transaction Group",
+        "description": "A group of one or more Algorand transactions submitted atomically.",
+        "items": {
+            "type": "object",
+            "required": [
+                "type",
+                "snd"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "pay",
+                        "keyreg",
+                        "acfg",
+                        "axfer",
+                        "afrz",
+                        "appl"
+                    ],
+                    "description": "Transaction type."
+                },
+                "fee": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Transaction fee in microAlgos."
+                },
+                "fv": {
+                    "type": "integer",
+                    "description": "First valid round."
+                },
+                "lv": {
+                    "type": "integer",
+                    "description": "Last valid round."
+                },
+                "gh": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9+/=]{44}$",
+                    "description": "Genesis hash (Base64 encoded 32 bytes)."
+                },
+                "snd": {
+                    "type": "string",
+                    "description": "Sender address."
+                },
+                "gen": {
+                    "type": "string",
+                    "description": "Genesis ID."
+                },
+                "grp": {
+                    "type": "string",
+                    "description": "Group ID (Base64, optional)."
+                },
+                "lx": {
+                    "type": "string",
+                    "description": "Lease value (Base64, optional)."
+                },
+                "note": {
+                    "type": "string",
+                    "description": "Optional note (Base64-encoded data)."
+                },
+                "rekey": {
+                    "type": "string",
+                    "description": "RekeyTo address (optional)."
+                }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "type": {
+                                "const": "pay"
+                            }
+                        }
+                    },
+                    "then": {
+                        "title": "Payment Transaction",
+                        "required": [
+                            "rcv",
+                            "amt"
+                        ],
+                        "properties": {
+                            "rcv": {
+                                "type": "string",
+                                "description": "Receiver address."
+                            },
+                            "amt": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "description": "Amount in microAlgos."
+                            },
+                            "close": {
+                                "type": "string",
+                                "description": "Close remainder to address (optional)."
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "type": {
+                                "const": "keyreg"
+                            }
+                        }
+                    },
+                    "then": {
+                        "title": "Key Registration Transaction",
+                        "properties": {
+                            "votekey": {
+                                "type": "string",
+                                "description": "Participation public key."
+                            },
+                            "selkey": {
+                                "type": "string",
+                                "description": "VRF public key."
+                            },
+                            "sprfkey": {
+                                "type": "string",
+                                "description": "State proof public key."
+                            },
+                            "votefst": {
+                                "type": "integer",
+                                "description": "First round key is valid."
+                            },
+                            "votelst": {
+                                "type": "integer",
+                                "description": "Last round key is valid."
+                            },
+                            "votekd": {
+                                "type": "integer",
+                                "description": "Key dilution parameter."
+                            },
+                            "nonpart": {
+                                "type": "boolean",
+                                "description": "Mark account as non-participating."
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "type": {
+                                "const": "acfg"
+                            }
+                        }
+                    },
+                    "then": {
+                        "title": "Asset Configuration Transaction",
+                        "properties": {
+                            "caid": {
+                                "type": "integer",
+                                "description": "Asset ID (0 for creation)."
+                            },
+                            "apar": {
+                                "type": "object",
+                                "title": "Asset Parameters",
+                                "properties": {
+                                    "t": {
+                                        "type": "integer",
+                                        "description": "Total units of the asset."
+                                    },
+                                    "dc": {
+                                        "type": "integer",
+                                        "description": "Decimals precision."
+                                    },
+                                    "df": {
+                                        "type": "boolean",
+                                        "description": "Default frozen."
+                                    },
+                                    "un": {
+                                        "type": "string",
+                                        "maxLength": 8,
+                                        "description": "Unit name."
+                                    },
+                                    "an": {
+                                        "type": "string",
+                                        "maxLength": 32,
+                                        "description": "Asset name."
+                                    },
+                                    "au": {
+                                        "type": "string",
+                                        "maxLength": 96,
+                                        "description": "Asset info URL."
+                                    },
+                                    "am": {
+                                        "type": "string",
+                                        "description": "Metadata hash (Base64)."
+                                    },
+                                    "m": {
+                                        "type": "string",
+                                        "description": "Manager address."
+                                    },
+                                    "r": {
+                                        "type": "string",
+                                        "description": "Reserve address."
+                                    },
+                                    "f": {
+                                        "type": "string",
+                                        "description": "Freeze address."
+                                    },
+                                    "c": {
+                                        "type": "string",
+                                        "description": "Clawback address."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "type": {
+                                "const": "axfer"
+                            }
+                        }
+                    },
+                    "then": {
+                        "title": "Asset Transfer Transaction",
+                        "required": [
+                            "xaid",
+                            "aamt",
+                            "arcv"
+                        ],
+                        "properties": {
+                            "xaid": {
+                                "type": "integer",
+                                "description": "Asset ID being transferred."
+                            },
+                            "aamt": {
+                                "type": "integer",
+                                "description": "Amount of asset being transferred."
+                            },
+                            "asnd": {
+                                "type": "string",
+                                "description": "Asset sender (for clawback)."
+                            },
+                            "arcv": {
+                                "type": "string",
+                                "description": "Asset receiver."
+                            },
+                            "aclose": {
+                                "type": "string",
+                                "description": "Close asset holding (opt-out)."
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "type": {
+                                "const": "afrz"
+                            }
+                        }
+                    },
+                    "then": {
+                        "title": "Asset Freeze Transaction",
+                        "required": [
+                            "fadd",
+                            "faid",
+                            "afrz"
+                        ],
+                        "properties": {
+                            "fadd": {
+                                "type": "string",
+                                "description": "Address whose asset is being frozen."
+                            },
+                            "faid": {
+                                "type": "integer",
+                                "description": "Asset ID being frozen."
+                            },
+                            "afrz": {
+                                "type": "boolean",
+                                "description": "True to freeze the asset."
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "type": {
+                                "const": "appl"
+                            }
+                        }
+                    },
+                    "then": {
+                        "title": "Application Call Transaction",
+                        "required": [
+                            "apid"
+                        ],
+                        "properties": {
+                            "apid": {
+                                "type": "integer",
+                                "description": "Application ID."
+                            },
+                            "apan": {
+                                "type": "integer",
+                                "description": "OnComplete action code."
+                            },
+                            "apat": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "App accounts."
+                            },
+                            "apaa": {
+                                "type": "array",
+                                "description": "App arguments (Base64)."
+                            },
+                            "apap": {
+                                "type": "string",
+                                "description": "Approval program (Base64)."
+                            },
+                            "apsu": {
+                                "type": "string",
+                                "description": "Clear state program (Base64)."
+                            },
+                            "apfa": {
+                                "type": "array",
+                                "items": {
+                                    "type": "integer"
+                                },
+                                "description": "Foreign app IDs."
+                            },
+                            "apas": {
+                                "type": "array",
+                                "items": {
+                                    "type": "integer"
+                                },
+                                "description": "Foreign asset IDs."
+                            },
+                            "apgs": {
+                                "type": "object",
+                                "properties": {
+                                    "nui": {
+                                        "type": "integer",
+                                        "description": "Global integer slots."
+                                    },
+                                    "nbs": {
+                                        "type": "integer",
+                                        "description": "Global byte slice slots."
+                                    }
+                                }
+                            },
+                            "apls": {
+                                "type": "object",
+                                "properties": {
+                                    "nui": {
+                                        "type": "integer",
+                                        "description": "Local integer slots."
+                                    },
+                                    "nbs": {
+                                        "type": "integer",
+                                        "description": "Local byte slice slots."
+                                    }
+                                }
+                            },
+                            "apep": {
+                                "type": "integer",
+                                "description": "Extra program pages."
+                            },
+                            "apbx": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "i": {
+                                            "type": "integer",
+                                            "description": "App ID."
+                                        },
+                                        "n": {
+                                            "type": "string",
+                                            "description": "Box name (Base64)."
+                                        }
+                                    }
+                                },
+                                "description": "Boxes accessible to the application."
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

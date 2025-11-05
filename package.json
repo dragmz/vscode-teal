@@ -31,6 +31,18 @@
     }
   },
   "contributes": {
+    "snippets": [
+      {
+        "language": "json",
+        "path": "./snippets/transactions.code-snippets"
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": "*.avm.simulate.json",
+        "url": "./schemas/simulate.schema.json"
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {
