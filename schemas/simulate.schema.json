@@ -3,12 +3,35 @@
     "$id": "https://example.com/schemas/algorand-transaction-array.schema.json",
     "title": "Algorand Transaction Groups",
     "description": "Schema for arrays of Algorand transaction groups, where each group is an array of transactions.",
-    "type": "array",
-    "items": {
-        "type": "array",
-        "title": "Transaction Group",
-        "description": "A group of one or more Algorand transactions submitted atomically.",
-        "items": {
+    "type": [
+        "object",
+        "array"
+    ],
+    "oneOf": [
+        {
+            "description": "Single transaction object",
+            "$ref": "#/$defs/transaction"
+        },
+        {
+            "description": "Array of transactions",
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/transaction"
+            }
+        },
+        {
+            "description": "Array of arrays of transactions",
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/$defs/transaction"
+                }
+            }
+        }
+    ],
+    "$defs": {
+        "transaction": {
             "type": "object",
             "required": [
                 "type",

@@ -301,30 +301,72 @@ async function simulateDocumentTransactions(client: LanguageClient, url: string,
 		return;
 	}
 
-	const data = algosdk.parseJSON(content, { intDecoding: IntDecoding.BIGINT });
+	let data: any;
+
+	try {
+		data = algosdk.parseJSON(content, { intDecoding: IntDecoding.BIGINT });
+	} catch (e: any) {
+		vscode.window.showErrorMessage(`Failed to parse current document as simulation transactions JSON - ${e.message ? e.message : String(e)}`);
+		return;
+	}
+
+	if (data) {
+		if (!Array.isArray(data)) {
+			data = [data];
+		}
+	} else {
+		return;
+	}
+
 	const groups: Transaction[][] = [];
 
 	const ac = new algosdk.Algodv2("", url);
 	const sp = await ac.getTransactionParams().do();
 
-	for (const groupdata of data) {
+	for (let groupdata of data) {
 		const group: Transaction[] = [];
 
-		for (const item of groupdata) {
-			let tx: Transaction;
+		if (!Array.isArray(groupdata)) {
+			groupdata = [groupdata];
+		}
 
-			item.fv = sp.firstValid;
-			item.lv = sp.lastValid;
-			item.gh = sp.genesisHash;
-			item.gen = sp.genesisID;
+		for (let item of groupdata) {
+			let txn: any;
 
-			const map = new Map(Object.entries(item));
+			if (item.txn) {
+				txn = item.txn;
+			} else {
+				txn = item;
+			}
+
+			if (txn.fv === undefined)
+				txn.fv = sp.firstValid;
+			if (txn.lv === undefined)
+				txn.lv = sp.lastValid;
+			if (txn.gh === undefined)
+				txn.gh = sp.genesisHash;
+			if (txn.gen === undefined)
+				txn.gen = sp.genesisID;
+			if (txn.fee === undefined)
+				txn.fee = sp.minFee;
+
+			if (typeof txn.gh === 'string') {
+				txn.gh = Uint8Array.from(Buffer.from(txn.gh, 'base64'));
+			}
+
+			if (typeof txn.grp === 'string') {
+				txn.grp = Uint8Array.from(Buffer.from(txn.grp, 'base64'));
+			}
+
+			const map = new Map(Object.entries(txn));
 			maybeConvertValuesArray(map, "apaa");
+
+			let tx: Transaction;
 
 			try {
 				tx = Transaction.fromEncodingData(map);
-			} catch (e) {
-				vscode.window.showErrorMessage(e instanceof Error ? e.message : String(e));
+			} catch (e: any) {
+				vscode.window.showErrorMessage(`Failed to decode transaction - ${e.message ? e.message : String(e)}`);
 				return;
 			}
 
@@ -405,7 +447,7 @@ async function simulateDocumentTransactions(client: LanguageClient, url: string,
 						.filter((entry: any) => entry.hash !== hashb64);
 
 					sourcesData["txn-group-sources"].push({
-						"sourcemap-location": `../../${sourcemapFilename}`,
+						"sourcemap-location": `../../ ${sourcemapFilename} `,
 						"hash": hashb64
 					});
 
@@ -548,7 +590,37 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	await client.start();
 
-	context.subscriptions.push(vscode.commands.registerCommand("teal.simulate", async () => {
+	context.subscriptions.push(vscode.commands.registerCommand("teal.transactions.create", async () => {
+		const folders = vscode.workspace.workspaceFolders;
+		if (!folders || folders.length === 0) {
+			vscode.window.showErrorMessage("No workspace folder found to create the transaction file.");
+			return;
+		}
+
+		const folder = folders[0];
+		const name = `transactions_${Date.now()}.avm.simulate.json`;
+		const uri = vscode.Uri.joinPath(folder.uri, name);
+
+		const initialContent = ``;
+		fs.writeFileSync(uri.fsPath, initialContent);
+
+		const doc = await vscode.workspace.openTextDocument(uri);
+		await vscode.window.showTextDocument(doc);
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand("teal.transactions.debug", async () => {
+		const network = await vscode.window.showQuickPick(["Mainnet", "Testnet", "Betanet"], {
+			placeHolder: "Select the network to debug against"
+		});
+
+		if (network === undefined) {
+			return;
+		}
+
+		await debugCurrentDocument(client, network);
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand("teal.transactions.simulate", async () => {
 		const url = await pickNetworkAndReturnUrl();
 
 		if (url === undefined) {
