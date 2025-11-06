@@ -447,7 +447,7 @@ async function simulateDocumentTransactions(client: LanguageClient, url: string,
 						.filter((entry: any) => entry.hash !== hashb64);
 
 					sourcesData["txn-group-sources"].push({
-						"sourcemap-location": `../../ ${sourcemapFilename} `,
+						"sourcemap-location": `../../${sourcemapFilename}`,
 						"hash": hashb64
 					});
 
