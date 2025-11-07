@@ -239,6 +239,92 @@ async function debugCurrentDocument(client: LanguageClient, network: string) {
 	}
 }
 
+async function prepareApplicationFiles(client: LanguageClient, networkUrl: string, appId: bigint) {
+	const folders = vscode.workspace.workspaceFolders;
+	if (!folders || folders.length === 0) {
+		vscode.window.showErrorMessage("No workspace folder found to save the sourcemap file.");
+		return;
+	}
+
+	const folder = folders[0];
+
+	const bytecodeFilename = `${appId}.bin`;
+	const bytecodeUri = vscode.Uri.joinPath(folder.uri, bytecodeFilename);
+
+	if (!fs.existsSync(bytecodeUri.fsPath)) {
+		const bytecode = await download(networkUrl, appId);
+		fs.writeFileSync(bytecodeUri.fsPath, bytecode);
+	}
+
+	const tealFilename = `${appId}.teal`;
+	const tealUri = vscode.Uri.joinPath(folder.uri, tealFilename);
+
+	if (!fs.existsSync(tealUri.fsPath)) {
+		const bytecode = fs.readFileSync(bytecodeUri.fsPath);
+
+		const decompiled = await decompile(client, bytecode);
+		if (decompiled) {
+			fs.writeFileSync(tealUri.fsPath, decompiled);
+		}
+	}
+
+	const doc = await vscode.workspace.openTextDocument(tealUri);
+	await vscode.window.showTextDocument(doc);
+
+	{
+		const sourcemapFilename = `${appId}.tok.map`;
+		const sourcemapUri = vscode.Uri.joinPath(folder.uri, sourcemapFilename);
+
+		if (!fs.existsSync(sourcemapUri.fsPath)) {
+			const sourcemap = await generateSourcemap(client, tealUri);
+			if (!sourcemap) {
+				return;
+			}
+
+			fs.writeFileSync(sourcemapUri.fsPath, sourcemap);
+		}
+
+		// update .algokit/sources/sources.avm.json with the sourcemap
+		/*
+{
+"txn-group-sources": [
+{
+"sourcemap-location": "../../3147789458.tok.map",
+"hash": "RQW/ad094zZlyehcWgH3zS6GopTa6eytpsV2W/lfFdA="
+}
+]
+}
+*/
+		const sourcesAvmUri = vscode.Uri.joinPath(folder.uri, ".algokit", "sources", "sources.avm.json");
+		// read and parse existing content if exists
+
+		let sourcesData: any;
+		if (fs.existsSync(sourcesAvmUri.fsPath)) {
+			const sourcesContent = fs.readFileSync(sourcesAvmUri.fsPath, 'utf-8');
+			sourcesData = JSON.parse(sourcesContent);
+		} else {
+			sourcesData = {};
+		}
+		if (!sourcesData["txn-group-sources"]) {
+			sourcesData["txn-group-sources"] = [];
+		}
+		const bytecode = fs.readFileSync(bytecodeUri.fsPath);
+		const hash = sha512_256.array(Uint8Array.from(bytecode));
+		const hashb64 = Buffer.from(hash).toString('base64');
+
+		sourcesData["txn-group-sources"] = sourcesData["txn-group-sources"]
+			.filter((entry: any) => entry.hash !== hashb64);
+
+		sourcesData["txn-group-sources"].push({
+			"sourcemap-location": `../../${sourcemapFilename}`,
+			"hash": hashb64
+		});
+
+		fs.mkdirSync(vscode.Uri.joinPath(folder.uri, ".algokit", "sources").fsPath, { recursive: true });
+		fs.writeFileSync(sourcesAvmUri.fsPath, JSON.stringify(sourcesData, null, 2));
+	}
+}
+
 export class CallBarProvider implements vscode.WebviewViewProvider {
 	public static readonly viewType = 'callbarview';
 	constructor(private readonly _context: vscode.ExtensionContext) { }
@@ -254,6 +340,23 @@ export class CallBarProvider implements vscode.WebviewViewProvider {
 		webviewView.webview.html = await this.getHtmlForWebview(webviewView.webview);
 		webviewView.webview.onDidReceiveMessage(async message => {
 			switch (message.command) {
+				case 'decompile':
+					{
+						const client = this._context.subscriptions.find(sub => sub instanceof LanguageClient) as LanguageClient;
+						if (!client) {
+							vscode.window.showErrorMessage("Language client not found.");
+							return;
+						}
+
+						const url = getNetworkUrl(message.network);
+						if (url === undefined) {
+							vscode.window.showErrorMessage(`Invalid network selected: ${message.network}`);
+							return;
+						}
+
+						await prepareApplicationFiles(client, url, BigInt(message.id));
+					}
+					break;
 				case 'debug':
 					{
 						const client = this._context.subscriptions.find(sub => sub instanceof LanguageClient) as LanguageClient;
@@ -264,6 +367,7 @@ export class CallBarProvider implements vscode.WebviewViewProvider {
 
 						await debugCurrentDocument(client, message.network);
 					}
+					break;
 			}
 		});
 	}
@@ -371,89 +475,7 @@ async function simulateDocumentTransactions(client: LanguageClient, url: string,
 			}
 
 			if (tx.type === algosdk.TransactionType.appl) {
-				const folders = vscode.workspace.workspaceFolders;
-				if (!folders || folders.length === 0) {
-					vscode.window.showErrorMessage("No workspace folder found to save the sourcemap file.");
-					return;
-				}
-
-				const folder = folders[0];
-
-				const bytecodeFilename = `${tx.applicationCall?.appIndex}.bin`;
-				const bytecodeUri = vscode.Uri.joinPath(folder.uri, bytecodeFilename);
-
-				if (!fs.existsSync(bytecodeUri.fsPath)) {
-					const bytecode = await download(url, BigInt(tx.applicationCall?.appIndex!));
-					fs.writeFileSync(bytecodeUri.fsPath, bytecode);
-				}
-
-				const tealFilename = `${tx.applicationCall?.appIndex}.teal`;
-				const tealUri = vscode.Uri.joinPath(folder.uri, tealFilename);
-
-				if (!fs.existsSync(tealUri.fsPath)) {
-					const bytecode = fs.readFileSync(bytecodeUri.fsPath);
-
-					const decompiled = await decompile(client, bytecode);
-					if (decompiled) {
-						fs.writeFileSync(tealUri.fsPath, decompiled);
-					}
-				}
-
-				const doc = await vscode.workspace.openTextDocument(tealUri);
-				await vscode.window.showTextDocument(doc);
-
-				{
-					const sourcemapFilename = `${tx.applicationCall?.appIndex}.tok.map`;
-					const sourcemapUri = vscode.Uri.joinPath(folder.uri, sourcemapFilename);
-
-					if (!fs.existsSync(sourcemapUri.fsPath)) {
-						const sourcemap = await generateSourcemap(client, tealUri);
-						if (!sourcemap) {
-							return;
-						}
-
-						fs.writeFileSync(sourcemapUri.fsPath, sourcemap);
-					}
-
-					// update .algokit/sources/sources.avm.json with the sourcemap
-					/*
-{
-"txn-group-sources": [
-{
-  "sourcemap-location": "../../3147789458.tok.map",
-  "hash": "RQW/ad094zZlyehcWgH3zS6GopTa6eytpsV2W/lfFdA="
-}
-]
-}
-*/
-					const sourcesAvmUri = vscode.Uri.joinPath(folder.uri, ".algokit", "sources", "sources.avm.json");
-					// read and parse existing content if exists
-
-					let sourcesData: any;
-					if (fs.existsSync(sourcesAvmUri.fsPath)) {
-						const sourcesContent = fs.readFileSync(sourcesAvmUri.fsPath, 'utf-8');
-						sourcesData = JSON.parse(sourcesContent);
-					} else {
-						sourcesData = {};
-					}
-					if (!sourcesData["txn-group-sources"]) {
-						sourcesData["txn-group-sources"] = [];
-					}
-					const bytecode = fs.readFileSync(bytecodeUri.fsPath);
-					const hash = sha512_256.array(Uint8Array.from(bytecode));
-					const hashb64 = Buffer.from(hash).toString('base64');
-
-					sourcesData["txn-group-sources"] = sourcesData["txn-group-sources"]
-						.filter((entry: any) => entry.hash !== hashb64);
-
-					sourcesData["txn-group-sources"].push({
-						"sourcemap-location": `../../${sourcemapFilename}`,
-						"hash": hashb64
-					});
-
-					fs.mkdirSync(vscode.Uri.joinPath(folder.uri, ".algokit", "sources").fsPath, { recursive: true });
-					fs.writeFileSync(sourcesAvmUri.fsPath, JSON.stringify(sourcesData, null, 2));
-				}
+				await prepareApplicationFiles(client, url, tx.applicationCall!.appIndex!);
 			}
 
 			group.push(tx);
