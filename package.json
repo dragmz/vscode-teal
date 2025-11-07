@@ -59,7 +59,7 @@
       "callbar": [
         {
           "id": "callbarview",
-          "name": "Simulate Transactions",
+          "name": "",
           "icon": "images/logo.png",
           "type": "webview"
         }
