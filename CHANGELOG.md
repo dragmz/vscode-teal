@@ -46,3 +46,6 @@
 
 ## v0.3.2
 - Simulate transactions
+
+## v0.3.8
+- Repeat transactions

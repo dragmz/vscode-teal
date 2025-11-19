@@ -81,11 +81,19 @@
         </select>
     </div>
     <button id="debug">Simulate</button>
+
     <div>
         <label for="appId">Application ID:</label>
         <input type="number" id="appId" placeholder="Enter Application ID">
     </div>
     <button id="decompile">Decompile</button>
+
+    <div>
+        <label for="txId">Transaction:</label>
+        <input type="text" id="txId" placeholder="Enter Transaction ID">
+    </div>
+    <button id="repeat">Repeat</button>
+
     <script>
         const vscode = acquireVsCodeApi();
         document.getElementById('debug').addEventListener('click', () => {
@@ -94,8 +102,13 @@
         });
         document.getElementById('decompile').addEventListener('click', () => {
             const network = document.getElementById('network').value;
-            const appId = document.getElementById('appId').value;
-            vscode.postMessage({ command: 'decompile', network, id: appId });
+            const id = document.getElementById('appId').value;
+            vscode.postMessage({ command: 'decompile', network, id });
+        });
+        document.getElementById('repeat').addEventListener('click', () => {
+            const network = document.getElementById('network').value;
+            const id = document.getElementById('txId').value;
+            vscode.postMessage({ command: 'repeat', network, id });
         });
     </script>
 </body>

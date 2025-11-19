@@ -135,7 +135,20 @@ async function tryUpdate(context: vscode.ExtensionContext, client: LanguageClien
 	}
 }
 
-function getNetworkUrl(network: string): string | undefined {
+function getNetworkIndexerUrl(network: string): string | undefined {
+	switch (network) {
+		case "Mainnet":
+			return "https://mainnet-idx.4160.nodely.dev";
+		case "Testnet":
+			return "https://testnet-idx.4160.nodely.dev";
+		case "Betanet":
+			return "https://betanet-idx.4160.nodely.dev";
+		default:
+			return undefined;
+	}
+}
+
+function getNetworkAlgodUrl(network: string): string | undefined {
 	switch (network) {
 		case "Mainnet":
 			return "https://mainnet-api.4160.nodely.dev";
@@ -161,20 +174,20 @@ function pickNetworkAndReturnUrl(): Thenable<string | undefined> {
 				placeHolder: "e.g. https://custom-algorand-node.com"
 			});
 		} else {
-			return getNetworkUrl(network);
+			return getNetworkAlgodUrl(network);
 		}
 	});
 }
 
 function convertValue(value: any): Uint8Array {
 	if (typeof value === 'string') {
-		if (value.startsWith('b64:')) {
-			return Uint8Array.from(Buffer.from(value.slice(4), 'base64'));
-		} else if (value.startsWith('0x')) {
-			return Uint8Array.from(Buffer.from(value.slice(2), 'hex'));
+		if (value.startsWith('str:')) {
+			return Uint8Array.from(Buffer.from(value.slice(4), 'utf-8'));
+		} else if (value.startsWith('hex:')) {
+			return Uint8Array.from(Buffer.from(value.slice(4), 'hex'));
 		}
 
-		return Uint8Array.from(Buffer.from(value, 'utf-8'));
+		return Uint8Array.from(Buffer.from(value, 'base64'));
 	}
 
 	if (typeof value === 'number' || typeof value === 'bigint') {
@@ -206,7 +219,7 @@ async function debugCurrentDocument(client: LanguageClient, network: string) {
 		return;
 	}
 
-	const url = getNetworkUrl(network);
+	const url = getNetworkAlgodUrl(network);
 	if (url === undefined) {
 		vscode.window.showErrorMessage(`Invalid network selected: ${network}`);
 		return;
@@ -325,6 +338,54 @@ async function prepareApplicationFiles(client: LanguageClient, networkUrl: strin
 	}
 }
 
+async function repeatTransaction(client: LanguageClient, algodUrl: string, indexerUrl: string, txId: string) {
+	const ac = new algosdk.Algodv2("", algodUrl);
+	const ic = new algosdk.Indexer("", indexerUrl, 443);
+
+	try {
+		const itx = await ic.lookupTransactionByID(txId).do();
+		const block = await ac.block(itx.transaction.confirmedRound!).do();
+
+		for (const ptx of block.block.payset) {
+			const data = ptx.signedTxn.signedTxn.txn.toEncodingData();
+
+			data.set("gh", itx.transaction.genesisHash!);
+			data.set("gen", itx.transaction.genesisId!);
+
+			const tx = algosdk.Transaction.fromEncodingData(data);
+			const id = tx.txID();
+
+			if (id === txId) {
+				const data = tx.toEncodingData();
+				const json = tx.getEncodingSchema().prepareJSON(data, {});
+				const content = algosdk.stringifyJSON(json, (key: string, value: any) => value, 4);
+
+				const folders = vscode.workspace.workspaceFolders;
+				if (!folders || folders.length === 0) {
+					vscode.window.showErrorMessage("No workspace folder found to create the transaction file.");
+					return;
+				}
+
+				const folder = folders[0];
+				const name = `repeat_${txId}_${Date.now()}.avm.simulate.json`;
+				const uri = vscode.Uri.joinPath(folder.uri, name);
+
+				fs.writeFileSync(uri.fsPath, content);
+
+				const doc = await vscode.workspace.openTextDocument(uri);
+				await vscode.window.showTextDocument(doc);
+
+				return;
+			}
+		}
+
+		vscode.window.showErrorMessage(`Top-level transaction ID ${txId} not found.`);
+	}
+	catch (e: any) {
+		vscode.window.showErrorMessage(`Failed to repeat transaction - ${e.message ? e.message : String(e)}`);
+	}
+}
+
 export class CallBarProvider implements vscode.WebviewViewProvider {
 	public static readonly viewType = 'callbarview';
 	constructor(private readonly _context: vscode.ExtensionContext) { }
@@ -339,16 +400,33 @@ export class CallBarProvider implements vscode.WebviewViewProvider {
 		};
 		webviewView.webview.html = await this.getHtmlForWebview(webviewView.webview);
 		webviewView.webview.onDidReceiveMessage(async message => {
+			const client = this._context.subscriptions.find(sub => sub instanceof LanguageClient) as LanguageClient;
+			if (!client) {
+				vscode.window.showErrorMessage("Language client not found.");
+				return;
+			}
+
 			switch (message.command) {
-				case 'decompile':
+				case 'repeat':
 					{
-						const client = this._context.subscriptions.find(sub => sub instanceof LanguageClient) as LanguageClient;
-						if (!client) {
-							vscode.window.showErrorMessage("Language client not found.");
+						const indexerUrl = getNetworkIndexerUrl(message.network);
+						if (indexerUrl === undefined) {
+							vscode.window.showErrorMessage(`Invalid network selected: ${message.network}`);
 							return;
 						}
 
-						const url = getNetworkUrl(message.network);
+						const algodUrl = getNetworkAlgodUrl(message.network);
+						if (algodUrl === undefined) {
+							vscode.window.showErrorMessage(`Invalid network selected: ${message.network}`);
+							return;
+						}
+
+						await repeatTransaction(client, algodUrl, indexerUrl, message.id);
+						break;
+					}
+				case 'decompile':
+					{
+						const url = getNetworkAlgodUrl(message.network);
 						if (url === undefined) {
 							vscode.window.showErrorMessage(`Invalid network selected: ${message.network}`);
 							return;
@@ -359,12 +437,6 @@ export class CallBarProvider implements vscode.WebviewViewProvider {
 					break;
 				case 'debug':
 					{
-						const client = this._context.subscriptions.find(sub => sub instanceof LanguageClient) as LanguageClient;
-						if (!client) {
-							vscode.window.showErrorMessage("Language client not found.");
-							return;
-						}
-
 						await debugCurrentDocument(client, message.network);
 					}
 					break;
@@ -464,6 +536,11 @@ async function simulateDocumentTransactions(client: LanguageClient, url: string,
 
 			const map = new Map(Object.entries(txn));
 			maybeConvertValuesArray(map, "apaa");
+
+			if (map.has("note")) {
+				const value: any = map.get("note");
+				map.set("note", convertValue(value));
+			}
 
 			let tx: Transaction;
 
