@@ -346,6 +346,8 @@ async function repeatTransaction(client: LanguageClient, algodUrl: string, index
 		const itx = await ic.lookupTransactionByID(txId).do();
 		const block = await ac.block(itx.transaction.confirmedRound!).do();
 
+		let group: Uint8Array | undefined = undefined;
+
 		for (const ptx of block.block.payset) {
 			const data = ptx.signedTxn.signedTxn.txn.toEncodingData();
 
@@ -356,9 +358,33 @@ async function repeatTransaction(client: LanguageClient, algodUrl: string, index
 			const id = tx.txID();
 
 			if (id === txId) {
-				const data = tx.toEncodingData();
-				const json = tx.getEncodingSchema().prepareJSON(data, {});
-				const content = algosdk.stringifyJSON(json, (key: string, value: any) => value, 4);
+				const jsons = [];
+
+				if (tx.group) {
+					for (const pgtx of block.block.payset) {
+						const gdata = pgtx.signedTxn.signedTxn.txn.toEncodingData();
+
+						gdata.set("gh", itx.transaction.genesisHash!);
+						gdata.set("gen", itx.transaction.genesisId!);
+
+						const gtx = algosdk.Transaction.fromEncodingData(gdata);
+						if (Buffer.from(gtx.group || new Uint8Array()).equals(tx.group)) {
+							const schema = gtx.getEncodingSchema();
+							const data = gtx.toEncodingData();
+
+							const json = schema.prepareJSON(data, {});
+							jsons.push(json);
+						}
+					}
+				} else {
+					const schema = tx.getEncodingSchema();
+					const data = tx.toEncodingData();
+
+					const json = schema.prepareJSON(data, {});
+					jsons.push(json);
+				}
+
+				const content = algosdk.stringifyJSON([jsons], (key: string, value: any) => value, 4);
 
 				const folders = vscode.workspace.workspaceFolders;
 				if (!folders || folders.length === 0) {
@@ -536,6 +562,11 @@ async function simulateDocumentTransactions(client: LanguageClient, url: string,
 
 			const map = new Map(Object.entries(txn));
 			maybeConvertValuesArray(map, "apaa");
+
+			if (map.has("lx")) {
+				const value: any = map.get("lx");
+				map.set("lx", convertValue(value));
+			}
 
 			if (map.has("note")) {
 				const value: any = map.get("note");

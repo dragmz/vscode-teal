@@ -49,3 +49,6 @@
 
 ## v0.3.8
 - Repeat transactions
+
+## v0.3.9
+- Repeat transaction groups
