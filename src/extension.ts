@@ -573,6 +573,12 @@ async function simulateDocumentTransactions(client: LanguageClient, url: string,
 				map.set("note", convertValue(value));
 			}
 
+			if (map.has("apbx")) {
+				const value: any = map.get("apbx");
+				const converted = value.map((item: any) => modelsv2.BoxReference.encodingSchema.fromPreparedJSON(item));
+				map.set("apbx", converted);
+			}
+
 			let tx: Transaction;
 
 			try {
