@@ -45,3 +45,7 @@ set GOPROXY=direct && go install github.com/dragmz/teal/cmd/tealsp@latest
 ```
 
 Then install this Visual Studio Code extension
+
+## Funding
+
+- This work has been performed with support from the Algorand Foundation xGov Program
