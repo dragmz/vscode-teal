@@ -338,9 +338,28 @@ async function prepareApplicationFiles(client: LanguageClient, networkUrl: strin
 	}
 }
 
+function prepareTransactionForRepeat(tx: Transaction, status: algosdk.SuggestedParams): algosdk.JSONEncodingData {
+	const schema = tx.getEncodingSchema();
+	const data = tx.toEncodingData();
+
+	// delete group and valid rounds to set new ones that will be valid at simulation time
+
+	data.delete("grp");
+	data.delete("lv");
+	data.delete("fv");
+
+	data.set("fv", status.firstValid);
+	data.set("lv", status.lastValid);
+
+	const json = schema.prepareJSON(data, {});
+	return json;
+}
+
 async function repeatTransaction(client: LanguageClient, algodUrl: string, indexerUrl: string, txId: string) {
 	const ac = new algosdk.Algodv2("", algodUrl);
 	const ic = new algosdk.Indexer("", indexerUrl, 443);
+
+	const status = await ac.getTransactionParams().do();
 
 	try {
 		const itx = await ic.lookupTransactionByID(txId).do();
@@ -369,18 +388,12 @@ async function repeatTransaction(client: LanguageClient, algodUrl: string, index
 
 						const gtx = algosdk.Transaction.fromEncodingData(gdata);
 						if (Buffer.from(gtx.group || new Uint8Array()).equals(tx.group)) {
-							const schema = gtx.getEncodingSchema();
-							const data = gtx.toEncodingData();
-
-							const json = schema.prepareJSON(data, {});
+							const json = prepareTransactionForRepeat(gtx, status);
 							jsons.push(json);
 						}
 					}
 				} else {
-					const schema = tx.getEncodingSchema();
-					const data = tx.toEncodingData();
-
-					const json = schema.prepareJSON(data, {});
+					const json = prepareTransactionForRepeat(tx, status);
 					jsons.push(json);
 				}
 
