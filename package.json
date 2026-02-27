@@ -48,13 +48,13 @@
               "type": "boolean",
               "description": "Controls inlay hints for named values",
               "default": true,
-              "scrope": "resource"
+              "scope": "resource"
             },
             "ui.inlayHints.decoded": {
               "type": "boolean",
               "description": "Controls inlay hints for decoded values",
               "default": true,
-              "scrope": "resource"
+              "scope": "resource"
             },
             "ui.pc.lens": {
               "type": "boolean",
